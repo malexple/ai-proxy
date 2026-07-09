@@ -60,13 +60,17 @@ public class ProxyService {
                 .exchangeToMono(response ->
                         response.bodyToMono(byte[].class)
                                 .defaultIfEmpty(new byte[0])
-                                .flatMap(body -> {
+                                .flatMap(bodyBytes -> {
+
+                                    // Превращаем байты в строку — JSON-текст
+                                    String body = new String(bodyBytes);
 
                                     ServerResponse.BodyBuilder builder =
                                             ServerResponse.status(
                                                     response.statusCode()
                                             );
 
+                                    // Копируем все заголовки, кроме тех, что мешают
                                     response.headers()
                                             .asHttpHeaders()
                                             .forEach((name, values) -> {
@@ -85,6 +89,12 @@ public class ProxyService {
                                                 );
 
                                             });
+
+                                    // Гарантируем, что Content-Type — JSON
+                                    builder.header(
+                                            HttpHeaders.CONTENT_TYPE,
+                                            "application/json"
+                                    );
 
                                     return builder.bodyValue(body);
 
