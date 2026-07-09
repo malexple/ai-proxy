@@ -109,6 +109,9 @@ public class ProxyService {
                     if (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name))
                         return;
 
+                    if (HttpHeaders.ACCEPT_ENCODING.equalsIgnoreCase(name))
+                        return;
+
                     values.forEach(
                             value ->
                                     target.header(
