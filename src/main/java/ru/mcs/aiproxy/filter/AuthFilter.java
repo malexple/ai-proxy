@@ -34,6 +34,15 @@ public class AuthFilter implements WebFilter {
             WebFilterChain chain
     ) {
 
+        String path =
+                exchange.getRequest()
+                        .getPath()
+                        .value();
+
+        if ("/actuator/health".equals(path)) {
+            return chain.filter(exchange);
+        }
+
         AppProperties.Security security =
                 appProperties.getSecurity();
 
