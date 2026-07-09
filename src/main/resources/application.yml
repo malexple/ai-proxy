@@ -17,6 +17,10 @@ logging:
 
 app:
 
+  security:
+    enabled: true
+    token: ${APP_PROXY_TOKEN:}
+
   providers:
 
     gemini:
