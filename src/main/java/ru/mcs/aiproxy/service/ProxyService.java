@@ -3,10 +3,12 @@ package ru.mcs.aiproxy.service;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import ru.mcs.aiproxy.model.ProxyRequest;
 
@@ -24,26 +26,42 @@ public class ProxyService {
 
     public Mono<ServerResponse> forward(ProxyRequest request) {
         URI uri = urlBuilderService.build(request);
+
         WebClient.RequestBodySpec requestBodySpec = webClient.method(request.method()).uri(uri);
         copyHeaders(request.headers(), requestBodySpec);
 
-        WebClient.RequestHeadersSpec<?> clientRequest =
-                (request.method() == HttpMethod.GET || request.method() == HttpMethod.HEAD)
-                        ? requestBodySpec
-                        : requestBodySpec.body(request.body(), DataBuffer.class);
+        WebClient.RequestHeadersSpec<?> clientRequest = hasBody(request.method())
+                ? requestBodySpec.body(request.body(), DataBuffer.class)
+                : requestBodySpec;
 
-        return clientRequest.exchangeToMono(response -> {
-            ServerResponse.BodyBuilder builder = ServerResponse.status(response.statusCode());
+        Mono<ResponseEntity<Flux<DataBuffer>>> responseMono = clientRequest
+                .retrieve()
+                .onStatus(status -> true, errorResponse -> Mono.empty())
+                .toEntityFlux(DataBuffer.class);
 
-            response.headers().asHttpHeaders().forEach((name, values) -> {
-                if (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) return;
-                if (HttpHeaders.TRANSFER_ENCODING.equalsIgnoreCase(name)) return;
-                if (HttpHeaders.CONTENT_ENCODING.equalsIgnoreCase(name)) return;
-                values.forEach(value -> builder.header(name, value));
-            });
+        return responseMono.flatMap(entity -> {
+            HttpHeaders filteredHeaders = filterHeaders(entity.getHeaders());
+            Flux<DataBuffer> body = entity.getBody() != null ? entity.getBody() : Flux.empty();
 
-            return builder.body(BodyInserters.fromPublisher(response.bodyToFlux(DataBuffer.class), DataBuffer.class));
+            return ServerResponse.status(entity.getStatusCode())
+                    .headers(h -> h.addAll(filteredHeaders))
+                    .body(BodyInserters.fromPublisher(body, DataBuffer.class));
         });
+    }
+
+    private boolean hasBody(HttpMethod method) {
+        return method != HttpMethod.GET && method != HttpMethod.HEAD;
+    }
+
+    private HttpHeaders filterHeaders(HttpHeaders source) {
+        HttpHeaders filtered = new HttpHeaders();
+        source.forEach((name, values) -> {
+            if (HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) return;
+            if (HttpHeaders.TRANSFER_ENCODING.equalsIgnoreCase(name)) return;
+            if (HttpHeaders.CONTENT_ENCODING.equalsIgnoreCase(name)) return;
+            filtered.put(name, values);
+        });
+        return filtered;
     }
 
     private void copyHeaders(HttpHeaders source, WebClient.RequestBodySpec target) {
