@@ -104,6 +104,55 @@ curl --request POST \
 
 **Adding/changing providers** is not done via a request to the proxy itself, but through Render Dashboard → Environment → `PROVIDERS_JSON` → Save → Restart. ai-proxy has no HTTP endpoint for editing the provider list — this setting is only read at process startup (see `ProviderConfigLoader`), so "on the fly" here means "without a git commit and without rebuilding the image," but not "without a restart."
 
+
+## Running with Docker
+
+### Using docker-compose
+
+If you have a `docker-compose.yml` file (I've already created one for you), you can run `ai-proxy` with the following command:
+
+```bash
+docker-compose up -d
+```
+
+This command will build the image (if it hasn't already been built) and start the container in the background. The application will be accessible at `http://localhost:8080`.
+
+To stop the container:
+
+```bash
+docker-compose down
+```
+
+### Using docker run
+
+You can also run the Docker image directly using the `docker run` command. Replace `malexple/ai-proxy:latest` with the latest image tag.
+
+```bash
+docker run -d -p 8080:8080 \
+-e "PORT=8080" \
+-e "PROVIDERS_JSON={\"gemini\":{\"baseUrl\":\"https://generativelanguage.googleapis.com\"},\"openai\":{\"baseUrl\":\"https://api.openai.com\"}}" \
+--name ai-proxy malexple/ai-proxy:latest
+```
+
+In this command:
+- `-d` starts the container in the background.
+- `-p 8080:8080` maps port 8080 on your host to port 8080 in the container.
+- `-e "PORT=8080"` sets the `PORT` environment variable inside the container. - `-e "PROVIDERS_JSON=..."` sets the `PROVIDERS_JSON` environment variable for the proxy configuration. You will need to replace the JSON contents with your actual configuration.
+- `--name ai-proxy` names the container for easier management.
+- `malexple/ai-proxy:latest` is the name and tag of the Docker image to run.
+
+To stop the container:
+
+```bash
+docker stop ai-proxy
+```
+
+To remove the container:
+
+```bash
+docker rm ai-proxy
+```
+
 ## Do settings survive a restart?
 
 There are two different types of settings with different fates here:
