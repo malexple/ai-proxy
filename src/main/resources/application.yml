@@ -19,26 +19,8 @@ app:
 
   security:
     enabled: true
-    token: ${APP_PROXY_TOKEN:}
+    allowed-ips: ${ALLOWED_IPS:}
+    admin-token: ${ADMIN_TOKEN:}
+    dynamic-ip-ttl-minutes: 720
 
-  providers:
-
-    gemini:
-      base-url: https://generativelanguage.googleapis.com
-      auth:
-        type: query
-        parameter: key
-        value: ${GEMINI_API_KEY}
-
-    openai:
-      base-url: https://api.openai.com
-      auth:
-        type: bearer
-        value: ${OPENAI_API_KEY:}
-
-    anthropic:
-      base-url: https://api.anthropic.com
-      auth:
-        type: header
-        header: x-api-key
-        value: ${ANTHROPIC_API_KEY:}
+  providers-json: ${PROVIDERS_JSON:{}}

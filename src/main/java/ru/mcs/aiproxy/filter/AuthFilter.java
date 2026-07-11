@@ -1,8 +1,8 @@
 package ru.mcs.aiproxy.filter;
 
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,19 +12,22 @@ import org.springframework.web.server.WebFilterChain;
 
 import reactor.core.publisher.Mono;
 import ru.mcs.aiproxy.config.AppProperties;
+import ru.mcs.aiproxy.service.IpAllowlistService;
 
 @Component
 public class AuthFilter implements WebFilter {
 
-    private static final String API_KEY_HEADER = "X-API-Key";
-
     private final AppProperties appProperties;
+
+    private final IpAllowlistService ipAllowlistService;
 
 
     public AuthFilter(
-            AppProperties appProperties
+            AppProperties appProperties,
+            IpAllowlistService ipAllowlistService
     ) {
         this.appProperties = appProperties;
+        this.ipAllowlistService = ipAllowlistService;
     }
 
 
@@ -43,6 +46,10 @@ public class AuthFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
+        if ("/admin/allow-ip".equals(path)) {
+            return chain.filter(exchange);
+        }
+
         AppProperties.Security security =
                 appProperties.getSecurity();
 
@@ -50,65 +57,43 @@ public class AuthFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
-        String configuredToken =
-                security.getToken();
+        String remoteAddress = resolveRemoteAddress(exchange);
 
-        if (configuredToken == null || configuredToken.isBlank()) {
-            return unauthorized(
-                    exchange,
-                    "Proxy token is not configured"
-            );
+        if (remoteAddress == null) {
+            return forbidden(exchange, "Cannot resolve client IP");
         }
 
-        String bearerToken =
-                extractBearerToken(
-                        exchange.getRequest()
-                                .getHeaders()
-                                .getFirst(HttpHeaders.AUTHORIZATION)
-                );
-
-        String apiKey =
-                exchange.getRequest()
-                        .getHeaders()
-                        .getFirst(API_KEY_HEADER);
-
-        if (configuredToken.equals(bearerToken) ||
-                configuredToken.equals(apiKey)) {
+        if (ipAllowlistService.isAllowed(remoteAddress)) {
             return chain.filter(exchange);
         }
 
-        return unauthorized(
-                exchange,
-                "Unauthorized"
-        );
+        return forbidden(exchange, "IP not allowed: " + remoteAddress);
 
     }
 
 
-    private String extractBearerToken(
-            String authorization
-    ) {
+    private String resolveRemoteAddress(ServerWebExchange exchange) {
 
-        if (authorization == null) {
+        InetSocketAddress remoteAddress =
+                exchange.getRequest()
+                        .getRemoteAddress();
+
+        if (remoteAddress == null || remoteAddress.getAddress() == null) {
             return null;
         }
 
-        if (!authorization.startsWith("Bearer ")) {
-            return null;
-        }
-
-        return authorization.substring(7);
+        return remoteAddress.getAddress().getHostAddress();
 
     }
 
 
-    private Mono<Void> unauthorized(
+    private Mono<Void> forbidden(
             ServerWebExchange exchange,
             String message
     ) {
 
         exchange.getResponse()
-                .setStatusCode(HttpStatus.UNAUTHORIZED);
+                .setStatusCode(HttpStatus.FORBIDDEN);
 
         exchange.getResponse()
                 .getHeaders()

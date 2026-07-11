@@ -4,8 +4,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import ru.mcs.aiproxy.handler.AdminHandler;
 import ru.mcs.aiproxy.handler.ProxyHandler;
 
+import static org.springframework.web.reactive.function.server.RequestPredicates.POST;
 import static org.springframework.web.reactive.function.server.RequestPredicates.all;
 import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
@@ -13,9 +15,18 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class RouterConfig {
 
     @Bean
-    RouterFunction<ServerResponse> routes(ProxyHandler proxyHandler) {
+    RouterFunction<ServerResponse> routes(
+            ProxyHandler proxyHandler,
+            AdminHandler adminHandler
+    ) {
 
-        return route(all(), proxyHandler::handle);
+        return route(
+                POST("/admin/allow-ip"),
+                adminHandler::allowCurrentIp
+        ).andRoute(
+                all(),
+                proxyHandler::handle
+        );
 
     }
 

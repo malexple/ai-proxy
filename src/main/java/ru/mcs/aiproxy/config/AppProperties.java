@@ -1,6 +1,8 @@
 package ru.mcs.aiproxy.config;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,6 +14,8 @@ public class AppProperties {
 
     private Security security = new Security();
 
+    private String providersJson = "{}";
+
     private Map<String, ProviderProperties> providers = new LinkedHashMap<>();
 
     public Security getSecurity() {
@@ -20,6 +24,14 @@ public class AppProperties {
 
     public void setSecurity(Security security) {
         this.security = security;
+    }
+
+    public String getProvidersJson() {
+        return providersJson;
+    }
+
+    public void setProvidersJson(String providersJson) {
+        this.providersJson = providersJson;
     }
 
     public Map<String, ProviderProperties> getProviders() {
@@ -35,7 +47,11 @@ public class AppProperties {
 
         private boolean enabled = true;
 
-        private String token;
+        private List<String> allowedIps = new ArrayList<>();
+
+        private String adminToken;
+
+        private long dynamicIpTtlMinutes = 720;
 
         public boolean isEnabled() {
             return enabled;
@@ -45,12 +61,28 @@ public class AppProperties {
             this.enabled = enabled;
         }
 
-        public String getToken() {
-            return token;
+        public List<String> getAllowedIps() {
+            return allowedIps;
         }
 
-        public void setToken(String token) {
-            this.token = token;
+        public void setAllowedIps(List<String> allowedIps) {
+            this.allowedIps = allowedIps;
+        }
+
+        public String getAdminToken() {
+            return adminToken;
+        }
+
+        public void setAdminToken(String adminToken) {
+            this.adminToken = adminToken;
+        }
+
+        public long getDynamicIpTtlMinutes() {
+            return dynamicIpTtlMinutes;
+        }
+
+        public void setDynamicIpTtlMinutes(long dynamicIpTtlMinutes) {
+            this.dynamicIpTtlMinutes = dynamicIpTtlMinutes;
         }
 
     }
