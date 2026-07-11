@@ -2,6 +2,7 @@ package ru.mcs.aiproxy.service;
 
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -23,10 +24,15 @@ public class ProxyService {
 
     public Mono<ServerResponse> forward(ProxyRequest request) {
         URI uri = urlBuilderService.build(request);
-        WebClient.RequestBodySpec clientRequest = webClient.method(request.method()).uri(uri);
-        copyHeaders(request.headers(), clientRequest);
+        WebClient.RequestBodySpec requestBodySpec = webClient.method(request.method()).uri(uri);
+        copyHeaders(request.headers(), requestBodySpec);
 
-        return clientRequest.body(request.body(), DataBuffer.class).exchangeToMono(response -> {
+        WebClient.RequestHeadersSpec<?> clientRequest =
+                (request.method() == HttpMethod.GET || request.method() == HttpMethod.HEAD)
+                        ? requestBodySpec
+                        : requestBodySpec.body(request.body(), DataBuffer.class);
+
+        return clientRequest.exchangeToMono(response -> {
             ServerResponse.BodyBuilder builder = ServerResponse.status(response.statusCode());
 
             response.headers().asHttpHeaders().forEach((name, values) -> {
