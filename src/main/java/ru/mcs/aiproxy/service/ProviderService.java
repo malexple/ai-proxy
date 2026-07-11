@@ -6,7 +6,6 @@ import ru.mcs.aiproxy.config.ProviderProperties;
 
 @Service
 public class ProviderService {
-
     private final AppProperties properties;
 
     public ProviderService(AppProperties properties) {
@@ -14,18 +13,10 @@ public class ProviderService {
     }
 
     public ProviderProperties getProvider(String provider) {
-
-        ProviderProperties config =
-                properties.getProviders().get(provider);
-
+        ProviderProperties config = properties.getProviders().get(provider);
         if (config == null) {
-            throw new IllegalArgumentException(
-                    "Unknown provider: " + provider
-            );
+            throw new IllegalArgumentException("Unknown provider: " + provider);
         }
-
         return config;
-
     }
-
 }

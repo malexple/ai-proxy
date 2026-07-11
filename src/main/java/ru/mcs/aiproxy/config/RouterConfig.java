@@ -15,19 +15,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 public class RouterConfig {
 
     @Bean
-    RouterFunction<ServerResponse> routes(
-            ProxyHandler proxyHandler,
-            AdminHandler adminHandler
-    ) {
-
-        return route(
-                POST("/admin/allow-ip"),
-                adminHandler::allowCurrentIp
-        ).andRoute(
-                all(),
-                proxyHandler::handle
-        );
-
+    RouterFunction<ServerResponse> routes(ProxyHandler proxyHandler, AdminHandler adminHandler) {
+        return route(POST("/admin/allow-ip"), adminHandler::allowCurrentIp).andRoute(all(), proxyHandler::handle);
     }
-
 }

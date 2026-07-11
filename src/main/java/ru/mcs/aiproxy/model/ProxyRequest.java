@@ -7,19 +7,6 @@ import org.springframework.util.MultiValueMap;
 import reactor.core.publisher.Flux;
 import ru.mcs.aiproxy.config.ProviderProperties;
 
-public record ProxyRequest(
-
-        ProviderProperties provider,
-
-        HttpMethod method,
-
-        String path,
-
-        HttpHeaders headers,
-
-        MultiValueMap<String, String> query,
-
-        Flux<DataBuffer> body
-
-) {
+public record ProxyRequest(ProviderProperties provider, HttpMethod method, String path, HttpHeaders headers,
+                           MultiValueMap<String, String> query, Flux<DataBuffer> body) {
 }

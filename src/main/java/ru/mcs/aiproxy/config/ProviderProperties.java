@@ -1,7 +1,6 @@
 package ru.mcs.aiproxy.config;
 
 public class ProviderProperties {
-
     private String baseUrl;
 
     public String getBaseUrl() {
@@ -11,5 +10,4 @@ public class ProviderProperties {
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
-
 }

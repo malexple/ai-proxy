@@ -9,5 +9,4 @@ public class GeminiProxyApplication {
     public static void main(String[] args) {
         SpringApplication.run(GeminiProxyApplication.class, args);
     }
-
 }

@@ -13,59 +13,18 @@ import ru.mcs.aiproxy.service.ProxyService;
 
 @Component
 public class ProxyHandler {
-
     private final ProviderService providerService;
-
     private final ProxyService proxyService;
 
-
-    public ProxyHandler(
-            ProviderService providerService,
-            ProxyService proxyService
-    ) {
+    public ProxyHandler(ProviderService providerService, ProxyService proxyService) {
         this.providerService = providerService;
         this.proxyService = proxyService;
     }
 
-
-    public Mono<ServerResponse> handle(
-            ServerRequest request
-    ) {
-
-        ProviderPath providerPath =
-                ProviderPath.parse(
-                        request.path()
-                );
-
-
-        ProviderProperties provider =
-                providerService.getProvider(
-                        providerPath.provider()
-                );
-
-
-        ProxyRequest proxyRequest =
-                new ProxyRequest(
-
-                        provider,
-
-                        request.method(),
-
-                        providerPath.path(),
-
-                        request.headers()
-                                .asHttpHeaders(),
-
-                        request.queryParams(),
-
-                        request.bodyToFlux(
-                                DataBuffer.class
-                        )
-                );
-
-
+    public Mono<ServerResponse> handle(ServerRequest request) {
+        ProviderPath providerPath = ProviderPath.parse(request.path());
+        ProviderProperties provider = providerService.getProvider(providerPath.provider());
+        ProxyRequest proxyRequest = new ProxyRequest(provider, request.method(), providerPath.path(), request.headers().asHttpHeaders(), request.queryParams(), request.bodyToFlux(DataBuffer.class));
         return proxyService.forward(proxyRequest);
-
     }
-
 }

@@ -11,11 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
-
     private Security security = new Security();
-
     private String providersJson = "{}";
-
     private Map<String, ProviderProperties> providers = new LinkedHashMap<>();
 
     public Security getSecurity() {
@@ -44,13 +41,9 @@ public class AppProperties {
 
 
     public static class Security {
-
         private boolean enabled = true;
-
         private List<String> allowedIps = new ArrayList<>();
-
         private String adminToken;
-
         private long dynamicIpTtlMinutes = 720;
 
         public boolean isEnabled() {
@@ -84,7 +77,5 @@ public class AppProperties {
         public void setDynamicIpTtlMinutes(long dynamicIpTtlMinutes) {
             this.dynamicIpTtlMinutes = dynamicIpTtlMinutes;
         }
-
     }
-
 }
