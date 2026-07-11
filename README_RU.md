@@ -24,7 +24,7 @@
 ## Пример `PROVIDERS_JSON`
 
 ```json
-json{
+{
   "gemini": {
     "baseUrl": "https://generativelanguage.googleapis.com"
   },
@@ -43,8 +43,8 @@ json{
 
 В OpenCode задаётся только `baseURL` — ключи вводятся штатным способом (`opencode auth login` или `{env:...}`), и OpenCode сам передаёт их в заголовках как обычно, а proxy их просто форвардит без изменений.opencode+1
 
-```
-json{
+```json
+{
   "$schema": "https://opencode.ai/config.json",
   "provider": {
     "google": {
@@ -64,8 +64,8 @@ json{
 
 **Gemini:**
 
-```
-bashcurl --request POST \
+```bashc
+url --request POST \
   --url 'https://ai-proxy-pog5.onrender.com/gemini/v1beta/models/gemini-2.5-flash:generateContent?key=YOUR_GEMINI_KEY' \
   --header 'Content-Type: application/json' \
   --data '{"contents":[{"parts":[{"text":"Explain how AI works in a few words"}]}]}'
@@ -73,8 +73,8 @@ bashcurl --request POST \
 
 **OpenAI:**
 
-```
-bashcurl --request POST \
+```bash
+curl --request POST \
   --url https://ai-proxy-pog5.onrender.com/openai/v1/chat/completions \
   --header 'Authorization: Bearer YOUR_OPENAI_KEY' \
   --header 'Content-Type: application/json' \
@@ -83,8 +83,8 @@ bashcurl --request POST \
 
 **Anthropic:**
 
-```
-bashcurl --request POST \
+```bash
+curl --request POST \
   --url https://ai-proxy-pog5.onrender.com/anthropic/v1/messages \
   --header 'x-api-key: YOUR_ANTHROPIC_KEY' \
   --header 'anthropic-version: 2023-06-01' \
@@ -96,8 +96,8 @@ bashcurl --request POST \
 
 **Разрешить текущий IP на 12 часов (динамический allowlist):**
 
-```
-bashcurl --request POST \
+```bash
+curl --request POST \
   --url https://ai-proxy-pog5.onrender.com/admin/allow-ip \
   --header 'X-Admin-Token: YOUR_ADMIN_TOKEN'
 ```
